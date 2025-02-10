@@ -10,6 +10,9 @@ upbit_acc_key = (os.getenv("UPBIT_ACCESS_KEY")) #업비트 액세스키
 upbit_sec_Key = (os.getenv("UPBIT_SECRET_KEY")) #업비트 시크릿키
 upbit = pyupbit.Upbit(upbit_acc_key, upbit_sec_Key)
 
+#계좌확인
+#print(upbit.get_balance)
+
 openAI_key = (os.getenv("OPENAI_API_KEY")) #OpenAI api키
 
 
@@ -21,4 +24,3 @@ wekeelyPriceBTC = pyupbit.get_ohlcv("KRW-BTC", count=10, interval="week")
 
 #업비트에서 1분봉 데이터를 5시간치 가져옴
 minPriceBTC = pyupbit.get_ohlcv("KRW-BTC", interval="minute1", count=300)
-print(minPriceBTC)
