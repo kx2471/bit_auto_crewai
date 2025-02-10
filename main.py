@@ -6,12 +6,17 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-upbit_acc_key = (os.getenv("UPBIT_ACCESS_KEY")) #업비트 액세스키
-upbit_sec_Key = (os.getenv("UPBIT_SECRET_KEY")) #업비트 시크릿키
-upbit = pyupbit.Upbit(upbit_acc_key, upbit_sec_Key)
+upbit_acc_key = os.getenv("UPBIT_ACCESS_KEY")  # 업비트 액세스 키
+upbit_sec_Key = os.getenv("UPBIT_SECRET_KEY")  # 업비트 시크릿 키
 
-#계좌확인
-#print(upbit.get_balance)
+if not upbit_acc_key or not upbit_sec_Key:
+    print("API 키가 설정되지 않았습니다.")
+else:
+    upbit = pyupbit.Upbit(upbit_acc_key, upbit_sec_Key)
+    # 계좌 확인
+    balance = upbit.get_balance()
+    print("계좌 잔고:", balance)
+
 
 openAI_key = (os.getenv("OPENAI_API_KEY")) #OpenAI api키
 
