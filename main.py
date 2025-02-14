@@ -1,4 +1,4 @@
-import crewai
+from crewai import Crew, Agent, Task
 import crewai_tools
 from openai import OpenAI
 import pyupbit
@@ -29,3 +29,15 @@ wekeelyPriceBTC = pyupbit.get_ohlcv("KRW-BTC", count=10, interval="week")
 
 #업비트에서 1분봉 데이터를 5시간치 가져옴
 minPriceBTC = pyupbit.get_ohlcv("KRW-BTC", interval="minute1", count=300)
+
+
+
+
+
+#CrewAi Agent 생성
+class dayAnalyst(Agent):
+    def run(self):
+        return "분석결과"
+
+class weekAnalyst(Agent):
+    def run()
