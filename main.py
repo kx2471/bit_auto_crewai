@@ -106,31 +106,124 @@ riskManagement                  = Agent(
 
 #crewai Task설정
 dayweekSpecial          = Task(
-                            description="",
+                            description="""
+The Senior Technical Analyst examines the last 90 days of daily candlestick data and the last 10 weeks of weekly charts to identify mid-to-long-term market trends.
+This report provides insights into price momentum, key support & resistance levels, and chart patterns to guide long-term trading strategies.                            
+""",
                             agent=dayweekSpecialist
-                            expected_output="",
+                            expected_output="""
+Market Trend Analysis:
+Uptrend / Downtrend / Sideways trend
+Recent shifts in market direction over 90 days & 10 weeks
+Technical Indicator Analysis:
+Moving Averages (SMA, EMA)
+RSI, MACD, Bollinger Bands
+Volume trends and market momentum
+Support & Resistance Levels:
+Key price levels
+Breakout potential assessment
+Chart Pattern Analysis:
+Candlestick formations (Head and Shoulders, Triangles, Double Bottoms)
+Comparison with historical trends
+Conclusions & Strategy:
+Projected price movements for the next 1-4 weeks
+Recommended buy/sell strategies & entry/exit price levels
+                          
+""",
                             )
 
 shortSpecial            = Task(
-                            description="",
+                            description="""
+The High-Frequency Trader analyzes intraday price movements over the last 5 hours using 1-minute to 30-minute candlestick data to detect short-term trading opportunities.
+This report focuses on scalping and day trading strategies.
+""",
                             agent=shortMinSpecialist
-                            expected_output="",
+                            expected_output="""
+Market Volatility Analysis (Last 5 Hours):
+Price swings and rapid movements
+Trading volume and liquidity assessment
+Short-Term Technical Indicator Analysis:
+Bollinger Bands, Stochastic Oscillator
+Moving Averages (5, 10, 20)
+Short-term support & resistance levels
+Key Trading Signals & Patterns:
+Recent buy/sell signals (Overbought/Oversold, Breakouts, Reversals)
+Short-term candlestick pattern recognition
+Trading Strategy:
+Projected price action for the next 1-6 hours
+Entry & exit strategies for short-term trades
+Risk-reward analysis & emergency exit plans                           
+""",
                             )
 
 marketAnalysis          = Task(
-                            description="",
+                            description="""
+The News Analyst tracks the latest 24-hour news, regulatory updates, and macroeconomic events affecting the crypto market.
+This report helps assess the impact of news on price movements and investor sentiment.
+                            """,
                             agent=marketAnalyist
-                            expected_output="",
+                            expected_output="""
+Key News Summary:
+Top 3-5 news articles from the past 24 hours
+Events that could significantly impact the market (regulations, institutional moves, major announcements)
+Market Sentiment Analysis:
+FOMO (Fear of Missing Out) vs. FUD (Fear, Uncertainty, Doubt) indicators
+Social media trends, search volume spikes
+News Impact Assessment:
+How specific news events could affect prices in the short & long term
+Comparison with historical similar events
+Strategic Response Plan:
+Buy opportunities based on positive news
+Risk management strategies for negative news
+Short-term volatility forecast and contingency plans
+                            """,
                             )
 
 fundAnalysis            = Task(
-                            description="",
+                            description="""
+The Researcher evaluates a cryptocurrency’s fundamentals (project, economic model, technology, and competitive landscape) to determine its long-term investment value.
+This report analyzes whitepapers, on-chain data, development progress, and overall market potential.
+                            """,
                             agent=fundAnalyist
-                            expected_output="",
+                            expected_output="""
+Project Overview & Analysis:
+Key functionalities and use cases of the cryptocurrency
+Development team and partnerships
+Token Economy & Supply Analysis:
+Total supply, circulating supply, and locked tokens
+Inflation/deflation mechanisms
+On-Chain Data Analysis:
+Active wallet addresses, transaction volume, staking ratio
+Whale activity and large transaction movements
+Growth Potential Assessment:
+Roadmap progress and technological updates
+Competitor analysis and market positioning
+Investment Strategy & Recommendations:
+Long-term holding recommendations
+Portfolio allocation adjustments
+Major risks and how to mitigate them
+                            """,
                             )
 
 riskManage              = Task(
-                            description="",
+                            description="""
+The Risk Management Specialist monitors market volatility, portfolio risk, and specific cryptocurrency risks to maintain a secure trading environment.
+This report provides early warnings, risk indicators, and defensive strategies to minimize potential losses.
+                            """,
                             agent=riskManagement
-                            expected_output="",
+                            expected_output="""
+Portfolio Risk Assessment:
+Current risk level of held positions
+Risk indicators (VaR, maximum potential loss)
+Market Volatility Analysis:
+Last 24-hour volatility and unusual price swings
+Liquidity concerns and spread widening
+Potential Risk Detection & Evaluation:
+Risk of price crashes in specific assets
+External threats (regulatory risks, large sell-offs)
+Risk Mitigation Strategies:
+Stop-loss levels & trigger points
+Hedging strategies and position adjustments
+Emergency alerts for high-risk situations
+                            """,
                             )
