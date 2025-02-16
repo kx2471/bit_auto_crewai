@@ -1,7 +1,9 @@
-from crewai import Crew, Agent, Task
-import crewai_tools
+from crewai import Crew, Agent, Task, LLM
+from crewai.tools import tool
 from openai import OpenAI
 import pyupbit
+from langchain_openai import ChatOpenAI
+import yfinance as yf
 import os 
 from dotenv import load_dotenv
 load_dotenv()
@@ -15,10 +17,34 @@ else:
     upbit = pyupbit.Upbit(upbit_acc_key, upbit_sec_Key)
     # 계좌 확인
     balance = upbit.get_balance()
-    print("계좌 잔고:", balance)
 
 
-openAI_key = (os.getenv("OPENAI_API_KEY")) #OpenAI api키
+
+#GPT 모델, API설정
+
+OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY")) #OpenAI api키
+OPENAI_MODEL_NAME = "gpt-4o-mini"
+
+gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.8, max_completion_tokens=7000)
+
+
+
+
+#crewai tool
+
+
+#비트코인뉴스를 가져오는 tool
+# @tool("Bitcoin News")
+# def bit_news(str):
+#     """
+#     Useful to get news about a cryptocurrency.
+#     """
+#     ticker_obj = yf.Ticker(str)
+#     return ticker_obj.news
+
+
+
+
 
 
 #업비트에서 일봉30일치 가져옴
@@ -28,7 +54,8 @@ dailyPriceBTC = pyupbit.get_ohlcv("KRW-BTC", count=30, interval="day")
 wekeelyPriceBTC = pyupbit.get_ohlcv("KRW-BTC", count=10, interval="week")
 
 #업비트에서 1분봉 데이터를 5시간치 가져옴
-minPriceBTC = pyupbit.get_ohlcv("KRW-BTC", interval="minute1", count=300)
+def get_minute_data():
+    return pyupbit.get_ohlcv("KRW-BTC", interval="minute1", count=300)
 
 
 
@@ -46,6 +73,8 @@ dayweekSpecialist             = Agent(
                             Each morning, digs deep into the charts using various technical indicators such as moving averages, candlestick patterns, RSI, and MACD to uncover hidden patterns and minute price changes.
                             Drawing on past experiences at major investment firms, excels at reading the unique volatility and complex patterns inherent in the cryptocurrency market, ensuring the team never misses a major market trend.
                             """,
+                            verbose=True,
+                            llm=gpt
                         )
 
 
@@ -57,6 +86,8 @@ shortMinSpecialist             = Agent(
                             """,
                             backstory="",
                             verbose=True,
+                            llm=gpt,
+                            
                         )
 
 
@@ -72,6 +103,9 @@ marketAnalyist                  = Agent(
                             Goes beyond mere news aggregation by forecasting the potential impact of news on market prices, providing the team with actionable strategies to respond promptly to shifts in market sentiment.
                             """,
                             verbose=True,
+                            llm=gpt,
+                            # tools=bit_news("BTC-USD")
+                        
                         )
 
 fundAnalyist                    = Agent(
@@ -86,6 +120,7 @@ fundAnalyist                    = Agent(
                             Diligently tracks whale movements and large-scale investor trends to propose long-term investment strategies based on fundamental value rather than mere price volatility.
                             """,
                             verbose=True,
+                            llm=gpt
                         )  
 
 riskManagement                  = Agent(
@@ -101,7 +136,27 @@ riskManagement                  = Agent(
                             With a solid background from working in the risk management departments of major investment institutions, this specialist has built a comprehensive risk management framework that accounts for both market uncertainties and investor psychology, ensuring a stable and secure investment environment for the entire team.
                             """,
                             verbose=True,
+                            llm=gpt
                         )                         
+
+
+headManager                     =Agent(
+                            role="Haed Manager",
+                            goal="""
+                            Synthesize reports from all experts to create optimal trading strategies in real-time
+                            Automatically generate strategies that minimize risk and maximize returns
+                            Act as a key decision maker to make final investment decisions quickly and accurately
+                            """,
+                            backstory="""
+                            A general manager is not just a data analyst; he or she is a professional who has weathered a lot of volatility in the past and realized huge returns.
+                            His ability to make sound judgments and calmly formulate strategies in the midst of extreme market fluctuations has resulted in returns of hundreds and thousands of percent.
+                            But his success isn't just luck, it's a well-calculated strategy that combines technical analysis, news flow, fundamental data, and risk management.
+
+                            Translated with DeepL.com (free version)
+                            """,
+                            verbose=True,
+                            llm=gpt
+                        )
 
 
 #crewai Task설정
@@ -110,11 +165,13 @@ dayweekSpecial          = Task(
 The Senior Technical Analyst examines the last 90 days of daily candlestick data and the last 10 weeks of weekly charts to identify mid-to-long-term market trends.
 This report provides insights into price momentum, key support & resistance levels, and chart patterns to guide long-term trading strategies.                            
 """,
-                            agent=dayweekSpecialist
+                            agent=dayweekSpecialist,
                             expected_output="""
 Market Trend Analysis:
 Uptrend / Downtrend / Sideways trend
 Recent shifts in market direction over 90 days & 10 weeks
+The data should be analyzed with the json file included in the context.
+
 Technical Indicator Analysis:
 Moving Averages (SMA, EMA)
 RSI, MACD, Bollinger Bands
@@ -127,8 +184,7 @@ Candlestick formations (Head and Shoulders, Triangles, Double Bottoms)
 Comparison with historical trends
 Conclusions & Strategy:
 Projected price movements for the next 1-4 weeks
-Recommended buy/sell strategies & entry/exit price levels
-                          
+Recommended buy/sell strategies & entry/exit price levels                          
 """,
                             )
 
@@ -137,11 +193,13 @@ shortSpecial            = Task(
 The High-Frequency Trader analyzes intraday price movements over the last 5 hours using 1-minute to 30-minute candlestick data to detect short-term trading opportunities.
 This report focuses on scalping and day trading strategies.
 """,
-                            agent=shortMinSpecialist
+                            agent=shortMinSpecialist,
                             expected_output="""
 Market Volatility Analysis (Last 5 Hours):
 Price swings and rapid movements
 Trading volume and liquidity assessment
+The data should be analyzed with the json file included in the context.
+
 Short-Term Technical Indicator Analysis:
 Bollinger Bands, Stochastic Oscillator
 Moving Averages (5, 10, 20)
@@ -161,7 +219,7 @@ marketAnalysis          = Task(
 The News Analyst tracks the latest 24-hour news, regulatory updates, and macroeconomic events affecting the crypto market.
 This report helps assess the impact of news on price movements and investor sentiment.
                             """,
-                            agent=marketAnalyist
+                            agent=marketAnalyist,
                             expected_output="""
 Key News Summary:
 Top 3-5 news articles from the past 24 hours
@@ -184,7 +242,7 @@ fundAnalysis            = Task(
 The Researcher evaluates a cryptocurrency’s fundamentals (project, economic model, technology, and competitive landscape) to determine its long-term investment value.
 This report analyzes whitepapers, on-chain data, development progress, and overall market potential.
                             """,
-                            agent=fundAnalyist
+                            agent=fundAnalyist,
                             expected_output="""
 Project Overview & Analysis:
 Key functionalities and use cases of the cryptocurrency
@@ -210,7 +268,7 @@ riskManage              = Task(
 The Risk Management Specialist monitors market volatility, portfolio risk, and specific cryptocurrency risks to maintain a secure trading environment.
 This report provides early warnings, risk indicators, and defensive strategies to minimize potential losses.
                             """,
-                            agent=riskManagement
+                            agent=riskManagement,
                             expected_output="""
 Portfolio Risk Assessment:
 Current risk level of held positions
@@ -227,3 +285,64 @@ Hedging strategies and position adjustments
 Emergency alerts for high-risk situations
                             """,
                             )
+
+
+headManage              = Task(
+                            description="""
+Provides detailed investment information about a coin based on reports from 'dayweekSpecialist', 'shortMinSpecialist', 'marketAnalyist', 'fundAnalyist', and 'riskManagement'. 
+                        """,
+                        agent=headManager,
+                        expected_output="""
+Your final answer MUST be a detailed recommendation to BUY, SELL, HOLD the coin. Provide a clear rationale for your recommendation.
+You should also remember that there is a "0.05%" commission on trades, and you should take this into account when deciding on your trading plan.
+                        """,
+                        context=[
+                            dayweekSpecial,
+                            shortSpecial,
+                            marketAnalysis,
+                            fundAnalysis,
+                            riskManage
+                        ],
+                        output_file="coin_recommendation.md"
+                        )
+
+
+def excute_analysis():
+    
+    crew = Crew(
+        agents=[
+            dayweekSpecialist,
+            shortMinSpecialist,
+            marketAnalyist,
+            fundAnalyist,
+            riskManagement,
+            headManager
+        ],
+        tasks=[
+            dayweekSpecial,
+            shortSpecial,
+            marketAnalysis,
+            fundAnalysis,
+            riskManage,
+            headManage
+        ],
+        verbose=True
+    )
+
+    result = crew.kickoff()
+
+    # headManage 결과 변수로 저장
+    recommendation = result.get('headManage', {}).get('recommendation', 'No recommendation')
+
+    # recommendation이 'BUY', 'SELL', 'HOLD' 중 하나인지 확인하고, 아니면 기본값으로 설정
+    if recommendation not in ['BUY', 'SELL', 'HOLD']:
+        recommendation = 'No recommendation'  # 기본값 설정
+
+    print(f"Recommendation: {recommendation}")
+
+
+
+
+if __name__ == "__main__":
+    excute_analysis()
+    
