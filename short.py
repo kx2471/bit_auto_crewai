@@ -297,16 +297,18 @@ def excute_analysis():
 
 def run_every_10_minutes():
     while True:
-        # 비트코인 뉴스, 가격 정보, 분석 및 매매 실행
-        bitcoin_news("BTC")  # 비트코인 뉴스 모음
-        bitcoin_price("minute1", 180, "shortminprice")  # 분봉데이터 확인
+        try:
+            # 비트코인 뉴스, 가격 정보, 분석 및 매매 실행
+            bitcoin_news("BTC")  # 비트코인 뉴스 모음
+            bitcoin_price("minute1", 180, "shortminprice")  # 분봉데이터 확인
 
-        excute_analysis()  # 분석 시작
-        upbit_trading()  # 매매 실행
-        
+            excute_analysis()  # 분석 시작
+            upbit_trading()  # 매매 실행
+        except Exception as e:
+            print(f"Error occurred during execution: {e}")
+
         # 10분마다 (600초) 동안 대기
-        time.sleep(600)  # 900초 = 15분
-
+        time.sleep(600)
 
 
 if __name__ == "__main__":
