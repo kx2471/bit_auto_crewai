@@ -1,5 +1,6 @@
-from crewai import Crew, Agent, Task, LLM
+from crewai import Crew, Agent, Task
 from crewai.tools import tool
+from crewai_tools import (FileReadTool, JSONSearchTool)
 from openai import OpenAI
 import pyupbit
 import json
@@ -21,6 +22,11 @@ else:
     balance = upbit.get_balance()
 
 
+#upbit 매수,매도 설정
+def upbit_trading():
+    return
+
+
 
 #GPT 모델, API설정
 
@@ -30,31 +36,54 @@ OPENAI_MODEL_NAME = "gpt-4o-mini"
 gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.8, max_completion_tokens=7000)
 
 
-
-
-#crewai tool
-
-@tool("뉴스 도구")
+#비트코인에 대한 뉴스를 확인하여 news.json으로 반환하는 함수
 def bitcoin_news(ticker_symbol: str):
     """Provide the latest news for a given ticker. The ticker_symbol is the name of a cryptocurrency news. example : "BTC-KRW" """
     try:
         ticker = yf.Ticker(ticker_symbol)
         news = ticker.news
-        return news if news else "해당 티커에 대한 뉴스가 없습니다."
+        
+        if news:
+            with open("news.json", "w", encoding="utf-8") as file:
+                json.dump(news, file, ensure_ascii=False, indent=4)
+            return "뉴스가 'news.json' 파일에 저장되었습니다."
+        else:
+            return "해당 티커에 대한 뉴스가 없습니다."
     except Exception as e:
         return f"오류 발생: {str(e)}"
+    
 
-def get_price_data(intervalname, countnum):
-    """Tool to retrieve the price at each interval for a "KRW-BTC".
-intreval has "day", "week", and "minute1", which are the daily, weekly, and minute1 timeframes, respectively.
-The value entered in count is the number of data from the current to the previous time. ex) In the case of daily 30 days, data from 30 days ago.
-"""
-    return pyupbit.get_ohlcv(ticker="KRW-BTC", interval=intervalname, count=countnum)
+#get ohlcv로 비트코인 분봉, 주봉, 월봉등 가져오는 함수
+def bitcoin_price(intervalName, countNum, filename):
+    # OHLCV 데이터 가져오기
+    bit_Price = pyupbit.get_ohlcv(ticker="KRW-BTC", interval=intervalName, count=countNum)
 
+    if bit_Price is not None:
+        # 인덱스(시간)를 컬럼으로 변환
+        bit_Price = bit_Price.reset_index()
+
+        # "index" 컬럼 이름을 "timestamp"로 변경
+        bit_Price.rename(columns={"index": "timestamp"}, inplace=True)
+
+        # 확장자 .json 자동 추가
+        if not filename.endswith(".json"):
+            filename += ".json"
+
+        # JSON 파일로 저장 (사용자가 지정한 파일명)
+        bit_Price.to_json(filename, orient="records", date_format="iso")
+
+    return bit_Price
+
+    
+
+#crewai tool
 
 #tool모음
-news_tool = bitcoin_news()
-PriceBTC = get_price_data()
+json_tool = JSONSearchTool(json_path='./news.json')
+minPrice_tool = JSONSearchTool(json_path='./minprice.json')
+weekPrice_tool = JSONSearchTool(json_path='./weekprice.json')
+dayPrice_tool = JSONSearchTool(json_path='./dayprice.json')
+
 
 
 #CrewAi Agent 생성
@@ -71,6 +100,7 @@ dayweekSpecialist             = Agent(
                             """,
                             verbose=True,
                             llm=gpt,
+                            tools=[dayPrice_tool, weekPrice_tool]
                         )
 
 
@@ -83,7 +113,8 @@ shortMinSpecialist             = Agent(
                             backstory="",
                             verbose=True,
                             llm=gpt,
-                            tools=[PriceBTC],                         
+                            tools=[minPrice_tool]
+                                               
                         )
 
 
@@ -100,7 +131,7 @@ marketAnalyist                  = Agent(
                             """,
                             verbose=True,
                             llm=gpt,
-                            tools=[news_tool],
+                            tools=[json_tool],
                         
                         )
 
@@ -158,7 +189,7 @@ headManager                     =Agent(
 #crewai Task설정
 dayweekSpecial          = Task(
                             description="""
-The Senior Technical Analyst examines the last 90 days of daily candlestick data and the last 10 weeks of weekly charts to identify mid-to-long-term market trends.
+The Senior Technical Analyst examines the last 90 days of daily candlestick data and the last 10 weeks of weekly charts to identify mid-to-long-term market trends. The pricing chart uses a JSON file.
 This report provides insights into price momentum, key support & resistance levels, and chart patterns to guide long-term trading strategies.                            
 """,
                             agent=dayweekSpecialist,
@@ -166,7 +197,7 @@ This report provides insights into price momentum, key support & resistance leve
 Market Trend Analysis:
 Uptrend / Downtrend / Sideways trend
 Recent shifts in market direction over 90 days & 10 weeks
-The data should be analyzed with the json file included in the context.
+The data should be analyzed with the "dayprice.json" and "weekprice.json" file included in the context.
 
 Technical Indicator Analysis:
 Moving Averages (SMA, EMA)
@@ -186,7 +217,7 @@ Recommended buy/sell strategies & entry/exit price levels
 
 shortSpecial            = Task(
                             description="""
-The High-Frequency Trader analyzes intraday price movements over the last 5 hours using 1-minute to 30-minute candlestick data to detect short-term trading opportunities.
+The High-Frequency Trader analyzes intraday price movements over the last 5 hours using 1-minute to 30-minute candlestick data to detect short-term trading opportunities. The pricing chart uses a JSON file.
 This report focuses on scalping and day trading strategies.
 """,
                             agent=shortMinSpecialist,
@@ -194,7 +225,7 @@ This report focuses on scalping and day trading strategies.
 Market Volatility Analysis (Last 5 Hours):
 Price swings and rapid movements
 Trading volume and liquidity assessment
-The data should be analyzed with the json file included in the context.
+The data should be analyzed with the "minprice.json" file included in the context.
 
 Short-Term Technical Indicator Analysis:
 Bollinger Bands, Stochastic Oscillator
@@ -217,19 +248,19 @@ This report helps assess the impact of news on price movements and investor sent
                             """,
                             agent=marketAnalyist,
                             expected_output="""
-Key News Summary:
-Top 3-5 news articles from the past 24 hours
-Events that could significantly impact the market (regulations, institutional moves, major announcements)
-Market Sentiment Analysis:
-FOMO (Fear of Missing Out) vs. FUD (Fear, Uncertainty, Doubt) indicators
+Read the news articles in the JSON file and analyze them, focusing on the following questions.
+The data should be analyzed with the "news.json" file included in the context.
+
+Analyzing market psychology:
+FOMO (fear of missing out) vs. FUD (fear, uncertainty, doubt) metrics
 Social media trends, search volume spikes
-News Impact Assessment:
-How specific news events could affect prices in the short & long term
-Comparison with historical similar events
-Strategic Response Plan:
-Buy opportunities based on positive news
+News impact assessment:
+How a specific news event affects prices in the short and long term
+Comparison to similar events in the past
+Strategic response planning:
+Identifying buying opportunities following positive news
 Risk management strategies for negative news
-Short-term volatility forecast and contingency plans
+Short-term volatility forecasting and contingency planning
                             """,
                             )
 
@@ -344,5 +375,10 @@ def excute_analysis():
 
 
 if __name__ == "__main__":
-    excute_analysis()
+    bitcoin_news("BTC") #비트코인 뉴스 모음
+    bitcoin_price("minute1", 300, "minprice") #분봉데이터 확인
+    bitcoin_price("week", 10, "weekprice") #주봉데이터 확인
+    bitcoin_price("day", 90, "dayprice") #일봉데이터 확인
+
+    excute_analysis() #분석시작
     
