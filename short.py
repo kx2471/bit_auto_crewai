@@ -50,7 +50,7 @@ def upbit_trading():
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY")) #OpenAI api키
 OPENAI_MODEL_NAME = "gpt-4o-mini"
 
-gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.8, max_completion_tokens=7000)
+gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.8, max_completion_tokens=5000)
 
 
 #비트코인에 대한 뉴스를 확인하여 news.json으로 반환하는 함수
@@ -172,15 +172,15 @@ headManager                     =Agent(
 #task
 shortSpecial            = Task(
                             description="""
-The High-Frequency Trader analyzes intraday price movements over the last 5 hours using 1-minute to 30-minute candlestick data to detect short-term trading opportunities. The pricing chart uses a JSON file.
+The High-Frequency Trader analyzes intraday price movements over the last 3 hours using 1-minute to 30-minute candlestick data to detect short-term trading opportunities. The pricing chart uses a JSON file.
 This report focuses on scalping and day trading strategies.
 """,
                             agent=shortMinSpecialist,
                             expected_output="""
-Market Volatility Analysis (Last 5 Hours):
+Market Volatility Analysis (Last 3 Hours):
 Price swings and rapid movements
 Trading volume and liquidity assessment
-The data should be analyzed with the "minprice.json" file included in the context.
+The data should be analyzed with the "shortminprice.json" file included in the context.
 
 Short-Term Technical Indicator Analysis:
 Bollinger Bands, Stochastic Oscillator
@@ -205,7 +205,7 @@ This report helps assess the impact of news on price movements and investor sent
                             agent=marketAnalyist,
                             expected_output="""
 Read the news articles in the JSON file and analyze them, focusing on the following questions.
-The data should be analyzed with the "news.json" file included in the context.
+The data should be analyzed with the "shortnews.json" file included in the context.
 
 Analyzing market psychology:
 FOMO (fear of missing out) vs. FUD (fear, uncertainty, doubt) metrics
@@ -295,11 +295,11 @@ def excute_analysis():
     print(decision)
 
 
-def run_every_15_minutes():
+def run_every_10_minutes():
     while True:
         # 비트코인 뉴스, 가격 정보, 분석 및 매매 실행
         bitcoin_news("BTC")  # 비트코인 뉴스 모음
-        bitcoin_price("minute1", 300, "shortminprice")  # 분봉데이터 확인
+        bitcoin_price("minute1", 180, "shortminprice")  # 분봉데이터 확인
 
         excute_analysis()  # 분석 시작
         upbit_trading()  # 매매 실행
@@ -310,4 +310,4 @@ def run_every_15_minutes():
 
 
 if __name__ == "__main__":
-    run_every_15_minutes()
+    run_every_10_minutes()
