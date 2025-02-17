@@ -2,6 +2,7 @@ from crewai import Crew, Agent, Task, LLM
 from crewai.tools import tool
 from openai import OpenAI
 import pyupbit
+import json
 from langchain_openai import ChatOpenAI
 import yfinance as yf
 import os 
@@ -72,7 +73,7 @@ dayweekSpecialist             = Agent(
                             Drawing on past experiences at major investment firms, excels at reading the unique volatility and complex patterns inherent in the cryptocurrency market, ensuring the team never misses a major market trend.
                             """,
                             verbose=True,
-                            llm=gpt
+                            llm=gpt,
                             tools=[PriceBTC],
                         )
 
@@ -288,12 +289,14 @@ Emergency alerts for high-risk situations
 
 headManage              = Task(
                             description="""
-Provides detailed investment information about a coin based on reports from 'dayweekSpecialist', 'shortMinSpecialist', 'marketAnalyist', 'fundAnalyist', and 'riskManagement'. 
+Provides detailed investment information about a Cryptocurrency based on reports from 'dayweekSpecialist', 'shortMinSpecialist', 'marketAnalyist', 'fundAnalyist', and 'riskManagement'. 
                         """,
                         agent=headManager,
                         expected_output="""
-Your final answer MUST be a detailed recommendation to BUY, SELL, HOLD the coin. Provide a clear rationale for your recommendation.
+Your final answer must be a detailed recommendation, choosing between buying, selling, or holding the cryptocurrency. Provide a clear rationale for your recommendation.
 You should also remember that there is a "0.05%" commission on trades, and you should take this into account when deciding on your trading plan.
+You MUST should output the report as a json file in the following format. No specification is allowed except for the following format.
+{"decision":"buy or sell or hold", "reason":"some technical reason"}
                         """,
                         context=[
                             dayweekSpecial,
@@ -302,8 +305,10 @@ You should also remember that there is a "0.05%" commission on trades, and you s
                             fundAnalysis,
                             riskManage
                         ],
-                        output_file="coin_recommendation.md"
+                        output_file="coin_recommendation.json"
                         )
+
+
 
 
 def excute_analysis():
@@ -327,17 +332,17 @@ def excute_analysis():
         ],
         verbose=True
     )
-
     result = crew.kickoff()
 
-    # headManage 결과 변수로 저장
-    recommendation = result.get('headManage', {}).get('recommendation', 'No recommendation')
+    # 파일을 열고 JSON 데이터 읽기
+    with open("coin_recommendation.json", "r") as file:
+        data = json.load(file)
 
-    # recommendation이 'BUY', 'SELL', 'HOLD' 중 하나인지 확인하고, 아니면 기본값으로 설정
-    if recommendation not in ['BUY', 'SELL', 'HOLD']:
-        recommendation = 'No recommendation'  # 기본값 설정
+    decision = data.get("decision")
 
-    print(f"Recommendation: {recommendation}")
+    # 결과 출력
+    print(decision)
+
 
 
 
