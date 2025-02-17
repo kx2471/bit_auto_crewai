@@ -5,6 +5,7 @@ import pyupbit
 import os 
 from dotenv import load_dotenv
 load_dotenv()
+os.environ["OPENAI_MODEL_NAME"] = "gpt-4o-mini"
 
 upbit_acc_key = os.getenv("UPBIT_ACCESS_KEY")  # 업비트 액세스 키
 upbit_sec_Key = os.getenv("UPBIT_SECRET_KEY")  # 업비트 시크릿 키
