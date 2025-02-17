@@ -33,32 +33,29 @@ gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.
 
 #crewai tool
 
-
-#비트코인뉴스를 가져오는 tool
-# @tool("Bitcoin News")
-# def bit_news(str):
-#     """
-#     Useful to get news about a cryptocurrency.
-#     """
-#     ticker_obj = yf.Ticker(str)
-#     return ticker_obj.news
-
-
+@tool("뉴스 도구")
+def bitcoin_news(ticker_symbol: str):
+    """Provide the latest news for a given ticker. The ticker_symbol is the name of a cryptocurrency news. example : "BTC-KRW" """
+    try:
+        ticker = yf.Ticker(ticker_symbol)
+        news = ticker.news
+        return news if news else "해당 티커에 대한 뉴스가 없습니다."
+    except Exception as e:
+        return f"오류 발생: {str(e)}"
 
 
+@tool("가격 가져오기")
+def get_price_data(intervalname, countnum):
+    """Tool to retrieve the price at each interval for a ticker.
+intreval has "day", "week", and "minute1", which are the daily, weekly, and minute1 timeframes, respectively.
+The value entered in count is the number of data from the current to the previous time. ex) In the case of daily 30 days, data from 30 days ago.
+"""
+    return pyupbit.get_ohlcv(ticker="KRW-BTC", interval=intervalname, count=countnum)
 
 
-#업비트에서 일봉30일치 가져옴
-dailyPriceBTC = pyupbit.get_ohlcv("KRW-BTC", count=30, interval="day")
-
-#업비트에서 주봉 10주치 가져옴
-wekeelyPriceBTC = pyupbit.get_ohlcv("KRW-BTC", count=10, interval="week")
-
-#업비트에서 1분봉 데이터를 5시간치 가져옴
-def get_minute_data():
-    return pyupbit.get_ohlcv("KRW-BTC", interval="minute1", count=300)
-
-
+#tool모음
+news_tool = bitcoin_news()
+PriceBTC = get_price_data()
 
 
 
@@ -76,6 +73,7 @@ dayweekSpecialist             = Agent(
                             """,
                             verbose=True,
                             llm=gpt
+                            tools=[PriceBTC],
                         )
 
 
@@ -88,7 +86,7 @@ shortMinSpecialist             = Agent(
                             backstory="",
                             verbose=True,
                             llm=gpt,
-                            
+                            tools=[PriceBTC],                         
                         )
 
 
@@ -105,7 +103,7 @@ marketAnalyist                  = Agent(
                             """,
                             verbose=True,
                             llm=gpt,
-                            # tools=bit_news("BTC-USD")
+                            tools=[news_tool],
                         
                         )
 
