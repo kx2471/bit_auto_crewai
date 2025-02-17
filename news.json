@@ -1,0 +1,246 @@
+[
+    {
+        "id": "c17a03f5-2db0-380a-91d5-bf9ffe76cd5e",
+        "content": {
+            "id": "c17a03f5-2db0-380a-91d5-bf9ffe76cd5e",
+            "contentType": "STORY",
+            "title": "Strength for the Dollar as the Fed Looks More Hawkish",
+            "description": "",
+            "summary": "Only two cuts in 2025 is a significant shift from earlier expectations.",
+            "pubDate": "2024-12-19T11:51:07Z",
+            "displayTime": "2024-12-19T11:51:07Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/fx_empire_176/8f0d7a4d30a3536ce66fbdb8e9fafcd6",
+                "originalWidth": 615,
+                "originalHeight": 410,
+                "caption": "",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/SjiVRdVmOdcjWYKal_3Ktw--~B/aD00MTA7dz02MTU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fx_empire_176/8f0d7a4d30a3536ce66fbdb8e9fafcd6",
+                        "width": 615,
+                        "height": 410,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/uc0s.GYiW7mRzNWvZtCmhA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fx_empire_176/8f0d7a4d30a3536ce66fbdb8e9fafcd6",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "FX Empire",
+                "url": "https://www.fxempire.com/"
+            },
+            "canonicalUrl": {
+                "url": "https://finance.yahoo.com/news/strength-dollar-fed-looks-more-115107585.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/strength-dollar-fed-looks-more-115107585.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "cae2f2e8-0872-394e-97cb-0f6be3e7c17c",
+        "content": {
+            "id": "cae2f2e8-0872-394e-97cb-0f6be3e7c17c",
+            "contentType": "STORY",
+            "title": "Bitcoin Breaks $100,000 as the Strong Uptrend Continues",
+            "description": "",
+            "summary": "Paul Atkins’ selection as incoming chair of the SEC has boosted sentiment.",
+            "pubDate": "2024-12-05T16:31:17Z",
+            "displayTime": "2024-12-05T16:31:17Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/fx_empire_176/7cf394c770fa29934373092296f1897d",
+                "originalWidth": 615,
+                "originalHeight": 410,
+                "caption": "",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/OdIwuUua1cprRkk2nzlZGA--~B/aD00MTA7dz02MTU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fx_empire_176/7cf394c770fa29934373092296f1897d",
+                        "width": 615,
+                        "height": 410,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/YrlgVu0HzgJL1GPz_zySXA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fx_empire_176/7cf394c770fa29934373092296f1897d",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "FX Empire",
+                "url": "https://www.fxempire.com/"
+            },
+            "canonicalUrl": {
+                "url": "https://finance.yahoo.com/news/bitcoin-breaks-100-000-strong-163117966.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/bitcoin-breaks-100-000-strong-163117966.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "c588c0e6-06ea-325f-9fe3-2fdd17376338",
+        "content": {
+            "id": "c588c0e6-06ea-325f-9fe3-2fdd17376338",
+            "contentType": "STORY",
+            "title": "Focus Remains On Crypto as Bitcoin Reaches a New High",
+            "description": "",
+            "summary": "14 November’s intraday high was around $93,500 amid ongoing high volume.",
+            "pubDate": "2024-11-15T10:28:37Z",
+            "displayTime": "2024-11-15T10:28:37Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/fx_empire_176/27d762d45c8e57aeb777cae47fca79c2",
+                "originalWidth": 615,
+                "originalHeight": 410,
+                "caption": "",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/BBYL5qkB97WaGH3bhlqafA--~B/aD00MTA7dz02MTU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fx_empire_176/27d762d45c8e57aeb777cae47fca79c2",
+                        "width": 615,
+                        "height": 410,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/3Fqgl3xwuWLx5__f1uG._A--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fx_empire_176/27d762d45c8e57aeb777cae47fca79c2",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "FX Empire",
+                "url": "https://www.fxempire.com/"
+            },
+            "canonicalUrl": {
+                "url": "https://finance.yahoo.com/news/focus-remains-crypto-bitcoin-reaches-102837134.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/focus-remains-crypto-bitcoin-reaches-102837134.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "f102dca4-1579-3780-bc7e-03e8baad3c94",
+        "content": {
+            "id": "f102dca4-1579-3780-bc7e-03e8baad3c94",
+            "contentType": "STORY",
+            "title": "BTC/USD Downturn: A Rally On the Horizon?",
+            "description": "",
+            "summary": "Crypto trading insights.",
+            "pubDate": "2024-08-07T12:53:15Z",
+            "displayTime": "2024-08-07T12:53:15Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/fx_empire_176/0de19b66012bcf9eb0488105a112999b",
+                "originalWidth": 615,
+                "originalHeight": 410,
+                "caption": "",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/T5L4jgwyKH3aufvnaM35QQ--~B/aD00MTA7dz02MTU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fx_empire_176/0de19b66012bcf9eb0488105a112999b",
+                        "width": 615,
+                        "height": 410,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/l8WyLgqkB2qe9FepMhSu0w--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fx_empire_176/0de19b66012bcf9eb0488105a112999b",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "FX Empire",
+                "url": "https://www.fxempire.com/"
+            },
+            "canonicalUrl": {
+                "url": "https://finance.yahoo.com/news/btc-usd-downturn-rally-horizon-125315083.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/btc-usd-downturn-rally-horizon-125315083.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    }
+]

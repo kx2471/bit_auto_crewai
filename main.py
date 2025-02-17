@@ -44,10 +44,8 @@ def bitcoin_news(ticker_symbol: str):
     except Exception as e:
         return f"오류 발생: {str(e)}"
 
-
-@tool("가격 가져오기")
 def get_price_data(intervalname, countnum):
-    """Tool to retrieve the price at each interval for a ticker.
+    """Tool to retrieve the price at each interval for a "KRW-BTC".
 intreval has "day", "week", and "minute1", which are the daily, weekly, and minute1 timeframes, respectively.
 The value entered in count is the number of data from the current to the previous time. ex) In the case of daily 30 days, data from 30 days ago.
 """
@@ -57,7 +55,6 @@ The value entered in count is the number of data from the current to the previou
 #tool모음
 news_tool = bitcoin_news()
 PriceBTC = get_price_data()
-
 
 
 #CrewAi Agent 생성
@@ -74,7 +71,6 @@ dayweekSpecialist             = Agent(
                             """,
                             verbose=True,
                             llm=gpt,
-                            tools=[PriceBTC],
                         )
 
 
