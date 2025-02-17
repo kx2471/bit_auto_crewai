@@ -6,6 +6,7 @@ import pyupbit
 import json
 from langchain_openai import ChatOpenAI
 import yfinance as yf
+import time
 import os 
 from dotenv import load_dotenv
 load_dotenv()
@@ -19,11 +20,22 @@ if not upbit_acc_key or not upbit_sec_Key:
 else:
     upbit = pyupbit.Upbit(upbit_acc_key, upbit_sec_Key)
     # 계좌 확인
-    balance = upbit.get_balance()
+    
 
+
+decision = None #AI결정값. 전역변수
 
 #upbit 매수,매도 설정
 def upbit_trading():
+    if decision == "buy":
+        krw_balance = upbit.get_balance("KRW")
+        upbit.buy_market_order("KRW-BTC", krw_balance-100)
+    elif decision == "sell":
+        btc_balance = upbit.get_balance("BTC")
+        upbit.sell_market_order("KRW-BTC", btc_balance)
+    else:
+        pass
+
     return
 
 
@@ -339,7 +351,8 @@ You MUST should output the report as a json file in the following format. No spe
 
 
 def excute_analysis():
-    
+    global decision
+
     crew = Crew(
         agents=[
             dayweekSpecialist,
@@ -370,15 +383,21 @@ def excute_analysis():
     # 결과 출력
     print(decision)
 
+def run_every_15_minutes():
+    while True:
+        # 비트코인 뉴스, 가격 정보, 분석 및 매매 실행
+        bitcoin_news("BTC")  # 비트코인 뉴스 모음
+        bitcoin_price("minute1", 300, "minprice")  # 분봉데이터 확인
+        bitcoin_price("week", 10, "weekprice")  # 주봉데이터 확인
+        bitcoin_price("day", 90, "dayprice")  # 일봉데이터 확인
 
+        excute_analysis()  # 분석 시작
+        upbit_trading()  # 매매 실행
+        
+        # 15분 (900초) 동안 대기
+        time.sleep(900)  # 900초 = 15분
 
 
 
 if __name__ == "__main__":
-    bitcoin_news("BTC") #비트코인 뉴스 모음
-    bitcoin_price("minute1", 300, "minprice") #분봉데이터 확인
-    bitcoin_price("week", 10, "weekprice") #주봉데이터 확인
-    bitcoin_price("day", 90, "dayprice") #일봉데이터 확인
-
-    excute_analysis() #분석시작
-    
+    run_every_15_minutes()
