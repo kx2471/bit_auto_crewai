@@ -1,8 +1,11 @@
-import os
-from dotenv import load_dotenv
+from crewai_tools import BaseTool
 
-load_dotenv()
+class CustomSerperDevTool(BaseTool):
+    name : str = "custom"
+    description: str = "bitnews"
 
-print("UPBIT_ACCESS_KEY:", os.getenv("UPBIT_ACCESS_KEY"))
-print("UPBIT_SECRET_KEY:", os.getenv("UPBIT_SECRET_KEY"))
-print("OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
+    def _run(self, query: str) ->str:
+        """
+        news
+        """
+        return "This is Test"
