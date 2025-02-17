@@ -61,7 +61,7 @@ def bitcoin_news(ticker_symbol: str):
         news = ticker.news
         
         if news:
-            with open("news.json", "w", encoding="utf-8") as file:
+            with open("shortnews.json", "w", encoding="utf-8") as file:
                 json.dump(news, file, ensure_ascii=False, indent=4)
             return "뉴스가 'news.json' 파일에 저장되었습니다."
         else:
