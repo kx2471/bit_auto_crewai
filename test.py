@@ -83,14 +83,42 @@ else:
     # 계좌 확인
     
 
-
-decision = None #AI결정값. 전역변수
-
-
-krw_balance = upbit.get_balance("KRW")
-btc_balance = upbit.get_balance("BTC")
-
-print(krw_balance)
-print(btc_balance)
     
+def masu_avg():
+    ticker = "KRW-BTC"
 
+    # 평균 매수가
+    avg_buy_price = upbit.get_avg_buy_price(ticker)
+
+    # 보유 수량
+    balance = upbit.get_balance(ticker)
+
+    # 매수금액 (총 투자금)
+    buy_amount = avg_buy_price * balance
+
+    # 현재 가격
+    current_price = pyupbit.get_orderbook(ticker)["orderbook_units"][0]["ask_price"]
+
+    # 현재 평가금액
+    eval_amount = current_price * balance
+
+    # 평가손익
+    profit_loss = eval_amount - buy_amount
+
+    balances = upbit.get_balances()
+
+    # 데이터 저장할 JSON 구조
+    data = {
+        "Buy Amount": buy_amount,
+        "Est. Value": eval_amount,
+        "P/L(%)": profit_loss,
+        "balance" : balances,
+    }
+
+    # JSON 파일로 저장
+    with open("trading_info.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+    print("📁 JSON 파일 저장 완료: trading_info.json")
+
+masu_avg()

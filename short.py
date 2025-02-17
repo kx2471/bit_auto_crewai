@@ -42,6 +42,42 @@ def upbit_trading():
 
     return
 
+def masu_avg():
+    ticker = "KRW-BTC"
+
+    # 평균 매수가
+    avg_buy_price = upbit.get_avg_buy_price(ticker)
+
+    # 보유 수량
+    balance = upbit.get_balance(ticker)
+
+    # 매수금액 (총 투자금)
+    buy_amount = avg_buy_price * balance
+
+    # 현재 가격
+    current_price = pyupbit.get_orderbook(ticker)["orderbook_units"][0]["ask_price"]
+
+    # 현재 평가금액
+    eval_amount = current_price * balance
+
+    # 평가손익
+    profit_loss = eval_amount - buy_amount
+
+    balances = upbit.get_balances()
+
+    # 데이터 저장할 JSON 구조
+    data = {
+        "Buy Amount": buy_amount,
+        "Est. Value": eval_amount,
+        "P/L(%)": profit_loss,
+        "balance" : balances,
+    }
+
+    # JSON 파일로 저장
+    with open("trading_info.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+    print("📁 JSON 파일 저장 완료: trading_info.json")
 
 
 
@@ -53,22 +89,6 @@ OPENAI_MODEL_NAME = "gpt-4o-mini"
 gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.8, max_completion_tokens=5000)
 
 
-#비트코인에 대한 뉴스를 확인하여 news.json으로 반환하는 함수
-def bitcoin_news(ticker_symbol: str):
-    """Provide the latest news for a given ticker. The ticker_symbol is the name of a cryptocurrency news. example : "BTC-KRW" """
-    try:
-        ticker = yf.Ticker(ticker_symbol)
-        news = ticker.news
-        
-        if news:
-            with open("shortnews.json", "w", encoding="utf-8") as file:
-                json.dump(news, file, ensure_ascii=False, indent=4)
-            return "뉴스가 'news.json' 파일에 저장되었습니다."
-        else:
-            return "해당 티커에 대한 뉴스가 없습니다."
-    except Exception as e:
-        return f"오류 발생: {str(e)}"
-    
 
 #get ohlcv로 비트코인 분봉, 주봉, 월봉등 가져오는 함수
 def bitcoin_price(intervalName, countNum, filename):
@@ -98,6 +118,7 @@ def bitcoin_price(intervalName, countNum, filename):
 #tool모음
 json_tool = JSONSearchTool(json_path='./shortnews.json')
 minPrice_tool = JSONSearchTool(json_path='./shortminprice.json')
+masu_tool = JSONSearchTool(json_path='./trading_info.json')
 
 
 
@@ -114,22 +135,6 @@ shortMinSpecialist             = Agent(
                                                
                         )
 
-marketAnalyist                  = Agent(
-                            role="Market News Analyst",
-                            goal="""
-                            Monitor real-time news, regulatory updates, and major industry events daily, swiftly collecting and analyzing crucial information related to the three assigned cryptocurrencies.
-                            Evaluate market sentiment by analyzing elements such as FUD (Fear, Uncertainty, Doubt) and FOMO (Fear of Missing Out), ensuring the team is well-prepared to respond to rapid market changes driven by external events.
-                            """,
-                            backstory="""
-                            An expert with over 5 years of industry experience, known for carefully reading and analyzing financial and blockchain-related news.
-                            Leverages a diverse range of sources—including Twitter, CoinDesk, exchange announcements, and government releases—to ensure no breaking news is missed, and excels at understanding the nuance and deeper implications behind each news item.
-                            Goes beyond mere news aggregation by forecasting the potential impact of news on market prices, providing the team with actionable strategies to respond promptly to shifts in market sentiment.
-                            """,
-                            verbose=True,
-                            llm=gpt,
-                            tools=[json_tool],
-                        
-                        )
 
 
 riskManagement                  = Agent(
@@ -159,11 +164,10 @@ headManager                     =Agent(
                             A general manager is not just a data analyst; he or she is a professional who has weathered a lot of volatility in the past and realized huge returns.
                             His ability to make sound judgments and calmly formulate strategies in the midst of extreme market fluctuations has resulted in returns of hundreds and thousands of percent.
                             But his success isn't just luck, it's a well-calculated strategy that combines technical analysis, news flow, fundamental data, and risk management.
-
-                            Translated with DeepL.com (free version)
                             """,
                             verbose=True,
-                            llm=gpt
+                            llm=gpt,
+                            tools=[masu_tool]
                         )
 
 
@@ -197,29 +201,8 @@ Risk-reward analysis & emergency exit plans
                             )
 
 
-marketAnalysis          = Task(
-                            description="""
-The News Analyst tracks the latest 24-hour news, regulatory updates, and macroeconomic events affecting the crypto market.
-This report helps assess the impact of news on price movements and investor sentiment.
-                            """,
-                            agent=marketAnalyist,
-                            expected_output="""
-Read the news articles in the JSON file and analyze them, focusing on the following questions.
-The data should be analyzed with the "shortnews.json" file included in the context.
 
-Analyzing market psychology:
-FOMO (fear of missing out) vs. FUD (fear, uncertainty, doubt) metrics
-Social media trends, search volume spikes
-News impact assessment:
-How a specific news event affects prices in the short and long term
-Comparison to similar events in the past
-Strategic response planning:
-Identifying buying opportunities following positive news
-Risk management strategies for negative news
-Short-term volatility forecasting and contingency planning
-                            """,
-                            )
-
+                            
 
 riskManage              = Task(
                             description="""
@@ -247,18 +230,18 @@ Emergency alerts for high-risk situations
 
 headManage              = Task(
                             description="""
-Provides detailed investment information about a Cryptocurrency based on reports from 'dayweekSpecialist', 'shortMinSpecialist', 'marketAnalyist', 'fundAnalyist', and 'riskManagement'. 
+Provides detailed investment information about a Cryptocurrency based on reports from  'shortMinSpecialist', 'marketAnalyist', and 'riskManagement'. 
                         """,
                         agent=headManager,
                         expected_output="""
 Your final answer must be a detailed recommendation, choosing between buying, selling, or holding the cryptocurrency. Provide a clear rationale for your recommendation.
-You should also remember that there is a "0.05%" commission on trades, and you should take this into account when deciding on your trading plan.
-You MUST should output the report as a json file in the following format. No specification is allowed except for the following format.
-{"decision":"buy or sell or hold", "reason":"some technical reason"}
+The current balance of your account, the amount of cryptocurrency you own, the purchase price, the valuation, and the profit/loss of your account are in the “trading_info.json” file. You MUST check this file to determine the current situation. 
+Also, you should not forget that there is a "0.05%" commission. All trades are executed in KRW or BTC.
+You MUST should output the report as a json file in the following format. No specification is allowed except for the following format. There shouldn't be any characters outside of this format.
+{"decision":"buy or sell or hold", "reason":"some technical reason and Provide a clear rationale for your recommendation."} 
                         """,
                         context=[
                             shortSpecial,
-                            marketAnalysis,
                             riskManage
                         ],
                         output_file="shortcoin_recommendation.json"
@@ -271,13 +254,11 @@ def excute_analysis():
     crew = Crew(
         agents=[
             shortMinSpecialist,
-            marketAnalyist,
             riskManagement,
             headManager
         ],
         tasks=[
             shortSpecial,
-            marketAnalysis,
             riskManage,
             headManage
         ],
@@ -299,16 +280,16 @@ def run_every_10_minutes():
     while True:
         try:
             # 비트코인 뉴스, 가격 정보, 분석 및 매매 실행
-            bitcoin_news("BTC")  # 비트코인 뉴스 모음
             bitcoin_price("minute1", 180, "shortminprice")  # 분봉데이터 확인
+            masu_avg()
 
             excute_analysis()  # 분석 시작
             upbit_trading()  # 매매 실행
         except Exception as e:
             print(f"Error occurred during execution: {e}")
 
-        # 10분마다 (600초) 동안 대기
-        time.sleep(600)
+        # 10분마다 (300초) 동안 대기
+        time.sleep(300)
 
 
 if __name__ == "__main__":
