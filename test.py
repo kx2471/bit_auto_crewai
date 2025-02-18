@@ -111,7 +111,7 @@ def masu_avg():
     data = {
         "Buy Amount": buy_amount,
         "Est. Value": eval_amount,
-        "P/L(%)": profit_loss,
+        "P/L": profit_loss,
         "balance" : balances,
     }
 

@@ -7,6 +7,7 @@ import json
 from langchain_openai import ChatOpenAI
 import yfinance as yf
 import time
+import re
 import os 
 from dotenv import load_dotenv
 load_dotenv()
@@ -69,7 +70,7 @@ def masu_avg():
     data = {
         "Buy Amount": buy_amount,
         "Est. Value": eval_amount,
-        "P/L(%)": profit_loss,
+        "P/L": profit_loss,
         "balance" : balances,
     }
 
@@ -86,7 +87,7 @@ def masu_avg():
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY")) #OpenAI api키
 OPENAI_MODEL_NAME = "gpt-4o-mini"
 
-gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.8, max_completion_tokens=5000)
+gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.5, max_completion_tokens=8000)
 
 
 
@@ -234,6 +235,7 @@ Provides detailed investment information about a Cryptocurrency based on reports
                         """,
                         agent=headManager,
                         expected_output="""
+The starting amount is 100000KRW.
 Your final answer must be a detailed recommendation, choosing between buying, selling, or holding the cryptocurrency. Provide a clear rationale for your recommendation.
 The current balance of your account, the amount of cryptocurrency you own, the purchase price, the valuation, and the profit/loss of your account are in the “trading_info.json” file. You MUST check this file to determine the current situation. 
 Also, you should not forget that there is a "0.05%" commission. All trades are executed in KRW or BTC.
@@ -266,11 +268,27 @@ def excute_analysis():
     )
     result = crew.kickoff()
 
-    # 파일을 열고 JSON 데이터 읽기
+     # 파일을 열고 JSON 데이터 읽기
     with open("shortcoin_recommendation.json", "r") as file:
-        data = json.load(file)
+        data = file.read()
 
-    decision = data.get("decision")
+    # 백틱이 포함된 불필요한 문자가 있는지 확인
+    if "```json" in data:
+        # 불필요한 문자가 있으면 정규식을 사용하여 백틱 제거
+        data_cleaned = re.sub(r'```json|```', '', data)
+
+        try:
+            # 정리된 데이터를 JSON으로 변환
+            json_data = json.loads(data_cleaned)
+        except json.JSONDecodeError as e:
+            print(f"JSON 디코딩 오류: {e}")
+            return
+    else:
+        # 불필요한 문자가 없으면 그대로 JSON 파싱
+        json_data = json.loads(data)
+
+    # decision 값 추출
+    decision = json_data.get("decision")
 
     # 결과 출력
     print(decision)
