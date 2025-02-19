@@ -82,8 +82,8 @@ def balance_current(ticker):
 
     # 거래 내역 조회
     # "done" 상태 주문과 "cancel" 상태 주문을 각각 가져오기
-    done_order_history = upbit.get_order("KRW-BTC", state="done", limit=15)
-    cancel_order_history = upbit.get_order("KRW-BTC", state="cancel", limit=15)
+    done_order_history = upbit.get_order("KRW-BTC", state="done", limit=5)
+    cancel_order_history = upbit.get_order("KRW-BTC", state="cancel", limit=5)
 
     # 두 리스트 합치기
     combined_order_history = done_order_history + cancel_order_history
@@ -121,7 +121,7 @@ def balance_current(ticker):
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY")) #OpenAI api키
 OPENAI_MODEL_NAME = "gpt-4o-mini"
 
-gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.5, max_completion_tokens=8000)
+gpt = ChatOpenAI(api_key=OPENAI_API_KEY, model=OPENAI_MODEL_NAME, temperature=0.3, max_completion_tokens=5000)
 
 
 
@@ -300,17 +300,18 @@ Suggestions for removing psychological biases and better thought processes
 headManage              = Task(
                             description="""
 The starting amount is 100000 KRW.
-Based on the reports of 'shortMinSpecialist' and 'reflectiveExperts', you decide to buy, sell, or hold for short-term scalping Bitcoin. You know that you can only buy all, sell all, or hold, and you remember that the fee for each trade is “0.05%”. You check your current balance, see how much you bought, how much it went up, and how much it went down, and your goal is to make a profit, not lose money.
+Based on the reports of 'shortMinSpecialist' and 'reflectiveExperts', you decide to buy, sell, or hold for short-term scalping BTC. You know that you can only buy all, sell all, or hold, and you remember that the fee for each trade is “0.05%”. You check your current balance, see how much you bought, how much it went up, and how much it went down, and your goal is to make a profit, not lose money.
 Then, you analyze the chart and calculate the price change since the previous trade was executed, the percentage loss, and the percentage loss including the commission (trade_outcome), and submit the psychological factors to the report (psychological_factors).  
 
-You can look at your previous transaction history to determine if you're holding Bitcoin now or not. For example, if the “side” value of the most recent transaction is bid, you have bitcoin, and if it is ask, you don't have bitcoin.
+You can check whether you are currently holding BTC by looking at your previous transaction history. For example, if the “side” value of your most recent trade is bid, you own BTC, and if it's ask, you don't own BTC. To determine which trade is the most recent, the “created_at” value in “trade_history” is the one whose data is closest to the current time.
 
 In 'trading_info.json' you can see your current holdings, average bid price, drawdown, etc. and your trading history.
  The structure of each data in 'trading_info.json' is as follows:
 
 "my_balances":
     "currency": The trading pair being used. It refers to the two assets being traded (e.g., KRW-BTC).
-    "balance": The amount of the asset currently held.
+    "KRW_balance":The amount of KRW you have.
+    "balance": The amount of cryptocurrency you currently hold.
     "avg_buy_price": The average price at which the asset was purchased.
     "buy_amount": The total amount spent to purchase the asset.
     "est_value": The estimated value of the asset based on the current market price.
@@ -352,9 +353,10 @@ example:
     "reflectiveExperts_analysis": "Insights provided by the reflective experts, which may suggest a cautious approach or a particular market condition to be aware of. (e.g, 78%)"
   },
   "trade_outcome": {
-    "price_change": "The percentage of profit or loss from the starting amount to the current price. (((est_value(If est_value is 0, the value of KRW_balance in my_balances) - 100000(starting amount)) / starting amount) * 100 ). Denoted by +,- symbols.",
-    "PNL": "The current profit or loss from the asset trade. Equal to the value of “profit_loss” in the “trading_info.json” file. but Denoted by +,- symbols.
-    "net_profit_after_fee": "“PNL” to limit the fee to the price. The amount of realized profit after the trade. ("PNL" - fee)"
+    "price_change": "The percentage of profit or loss from the starting amount to the current price. Calculation method: ((my_balances.est_value - 100000) / 100000) * 100
+    If my_balances.est_value is 0, replace with my_balances.KRW_balance",
+    "PNL": "The current profit or loss from the asset trade. Equal to the value of “profit_loss” in the “trading_info.json” file. but Denoted by +,- symbols.",
+    "net_profit_after_fee": "“PNL” to limit the fee(0.05%) to the price. The amount of realized profit after the trade. ("PNL" - fee)"
   },
   "psychological_factors": {
     "confidence_level": "The trader's confidence in the current decision and market outlook (e.g., "high", "medium", "low").",
