@@ -5,7 +5,7 @@ from openai import OpenAI
 import pyupbit
 import json
 from langchain_openai import ChatOpenAI
-import yfinance as yf
+import investmentJsonAppend
 import time
 import re
 import os 
@@ -43,8 +43,7 @@ def upbit_trading():
 
     return
 
-def masu_avg():
-    ticker = "KRW-BTC"
+def masu_avg(ticker):
 
     # 평균 매수가
     avg_buy_price = upbit.get_avg_buy_price(ticker)
@@ -126,8 +125,9 @@ masu_tool = JSONSearchTool(json_path='./trading_info.json')
 shortMinSpecialist             = Agent(
                             role="Short-Term Scalping Specialist",
                             goal="""
-                            In real-time, analyze the last 3 hours of minute-based charts to capture short-term price fluctuations and detect sudden spikes or drops.
-                            Develop and execute scalping trading strategies by identifying optimal entry and exit points to generate rapid profits.
+                            Analyze minute-by-minute charts of the past hour in real-time to spot short-term price movements and detect spikes or dips.
+Develop and execute scalping trading strategies by identifying optimal entry and exit points to generate quick profits.
+View charts and submit reports solely for profit.
                             """,
                             backstory="",
                             verbose=True,
@@ -138,20 +138,16 @@ shortMinSpecialist             = Agent(
 
 
 
-riskManagement                  = Agent(
-                            role="Risk Management Specialist",
+reflectiveExperts                  = Agent(
+                            role="Self-reflective experts",
                             goal="""
-                            Systematically evaluate and monitor various risks inherent in market and trading strategies, including market risk, liquidity risk, and credit risk.
-                            Develop effective stop-loss criteria, position sizing strategies, and hedging tactics to minimize overall risk exposure and ensure the team can respond swiftly to unexpected market volatility.
-                            Collaborate with other team experts to maintain portfolio stability and continuously enhance the efficiency of risk management processes.
+                            The goal is for teams to analyze data on previous decisions they've made and analyze the expected and actual outcomes of those decisions to find ways to do things better if they met expectations, and to self-reflect on why they didn't, and to strengthen their thinking so they can improve.
                             """,
-                            backstory="""
-                            A seasoned professional with over 7 years of experience in the finance and investment sectors, adept at managing risks across diverse market conditions through proven real-world strategies.
-                            Proficient in leveraging quantitative analysis tools and advanced risk management software to evaluate risks in real-time and tailor risk management strategies specific to the team's needs.
-                            With a solid background from working in the risk management departments of major investment institutions, this specialist has built a comprehensive risk management framework that accounts for both market uncertainties and investor psychology, ensuring a stable and secure investment environment for the entire team.
+                            backstory="""With over 10 years of experience in behavioral finance and decision-making psychology, this expert specializes in analyzing trading outcomes and cognitive biases. Having worked with hedge funds and proprietary trading firms, they refine strategies by comparing expected vs. actual results. Proficient in data analytics and performance reviews, they drive continuous improvement. Their structured self-reflection approach strengthens traders' strategic thinking and adaptability.
                             """,
+                           
                             verbose=True,
-                            llm=gpt
+                            llm=gpt,
                         )                         
 
 headManager                     =Agent(
@@ -168,7 +164,7 @@ headManager                     =Agent(
                             """,
                             verbose=True,
                             llm=gpt,
-                            tools=[masu_tool]
+                            tools=[masu_tool],
                         )
 
 
@@ -177,27 +173,24 @@ headManager                     =Agent(
 #task
 shortSpecial            = Task(
                             description="""
-The High-Frequency Trader analyzes intraday price movements over the last 3 hours using 1-minute to 30-minute candlestick data to detect short-term trading opportunities. The pricing chart uses a JSON file.
-This report focuses on scalping and day trading strategies.
+View and analyze 1-hour price chart data of Bitcoin to analyze the market, evaluate opportunities, recommend strategies, and formulate opinions.
 """,
                             agent=shortMinSpecialist,
                             expected_output="""
-Market Volatility Analysis (Last 3 Hours):
-Price swings and rapid movements
-Trading volume and liquidity assessment
-The data should be analyzed with the "shortminprice.json" file included in the context.
+1. market analysis (based on 1-hour chart)
+Current BTC price and key volatility indicators (e.g. ATR, Bollinger Bands)
+Key support/resistance levels and trend direction (up/down/sideways)
+Volume changes and liquidity conditions
 
-Short-Term Technical Indicator Analysis:
-Bollinger Bands, Stochastic Oscillator
-Moving Averages (5, 10, 20)
-Short-term support & resistance levels
-Key Trading Signals & Patterns:
-Recent buy/sell signals (Overbought/Oversold, Breakouts, Reversals)
-Short-term candlestick pattern recognition
-Trading Strategy:
-Projected price action for the next 1-6 hours
-Entry & exit strategies for short-term trades
-Risk-reward analysis & emergency exit plans                           
+2. evaluate trading opportunities
+Buy/Sell entry signals (e.g. momentum, breakout, reversal signals)
+Estimated target price and stop loss (including Risk-Reward Ratio)
+Other indicators to check (funding rate, open interest, etc.)
+
+3. recommended strategies and opinions
+The best trading strategy for the current market (e.g. scalping, breakout trading, counter-trend trading)
+Recommended action, whether buy/sell/wait-and-see, and the rationale behind it
+Success rate and reliability assessment of recent strategies                        
 """,
                             )
 
@@ -205,46 +198,63 @@ Risk-reward analysis & emergency exit plans
 
                             
 
-riskManage              = Task(
+reflective              = Task(
                             description="""
-The Risk Management Specialist monitors market volatility, portfolio risk, and specific cryptocurrency risks to maintain a secure trading environment.
-This report provides early warnings, risk indicators, and defensive strategies to minimize potential losses.
+Gather feedback on the head manager's buy, sell, and hold decisions and rationale over the past seven days, analyze them, and if you made a profit, analyze how you can do it better next time for greater profit, and if you lost money, self-reflect and come up with a better way to avoid losing money next time.
                             """,
-                            agent=riskManagement,
+                            agent=reflectiveExperts,
                             expected_output="""
-Portfolio Risk Assessment:
-Current risk level of held positions
-Risk indicators (VaR, maximum potential loss)
-Market Volatility Analysis:
-Last 24-hour volatility and unusual price swings
-Liquidity concerns and spread widening
-Potential Risk Detection & Evaluation:
-Risk of price crashes in specific assets
-External threats (regulatory risks, large sell-offs)
-Risk Mitigation Strategies:
-Stop-loss levels & trigger points
-Hedging strategies and position adjustments
-Emergency alerts for high-risk situations
+1. Evaluate decisions
+List of buy/sell/hold decisions made by the head manager in the last 7 days
+Key data and market conditions on which the decision was based
+Expected vs. actual outcome
+
+2. Analyze the thought process
+If the decision was right: what factors were valid?
+If the decision was wrong: What factors did not work and why?
+Recurring strengths and weaknesses in the head manager's decision-making patterns
+
+3. Improvements and optimization strategies
+Ways to improve to get closer to the right answer in the next analysis
+Adjust how data is interpreted and refine decision-making frameworks
+Suggestions for removing psychological biases and better thought processes
                             """,
                             )
 
 
 headManage              = Task(
                             description="""
-Provides detailed investment information about a Cryptocurrency based on reports from  'shortMinSpecialist', 'marketAnalyist', and 'riskManagement'. 
-                        """,
+Based on the reports of 'shortMinSpecialist' and 'reflectiveExperts', you decide to buy, sell, or hold for short-term scalping Bitcoin. You know that you can only buy all, sell all, or hold, and you remember that the fee for each trade is “0.05%”. You check your current balance, see how much you bought, how much it went up, and how much it went down, and your goal is to make a profit, not lose money.
+Then, you analyze the chart and calculate the price change since the previous trade was executed, the percentage loss, and the percentage loss including the commission (trade_outcome), and submit the psychological factors to the report (psychological_factors).  
+""",
                         agent=headManager,
                         expected_output="""
-The starting amount is 100000KRW.
-Your final answer must be a detailed recommendation, choosing between buying, selling, or holding the cryptocurrency. Provide a clear rationale for your recommendation.
-The current balance of your account, the amount of cryptocurrency you own, the purchase price, the valuation, and the profit/loss of your account are in the “trading_info.json” file. You MUST check this file to determine the current situation. 
-Also, you should not forget that there is a "0.05%" commission. All trades are executed in KRW or BTC.
-You MUST should output the report as a json file in the following format. No specification is allowed except for the following format. There shouldn't be any characters outside of this format.
-{"decision":"buy or sell or hold", "reason":"some technical reason and Provide a clear rationale for your recommendation."} 
+example:
+{
+  "decision": "buy or sell or hold",
+  "reason": "According to the ShortMinSpecialist report, BTC shows strong upward momentum and a high probability of breaking key resistance. The ReflectiveExperts report also indicates that breakout trades have had a 78% success rate recently. Current balance: 50,000 USDT, estimated BTC purchase: 0.98 (including fee).",
+  "decision_factors": {
+    "market_trend": "Strong uptrend",
+    "volatility": "Medium",
+    "shortMinSpecialist_signal": "Buy signal detected",
+    "reflectiveExperts_analysis": "Recent breakout trade success rate: 78%"
+  },
+  "trade_outcome": {
+    "price_change": "+0.5%",
+    "PNL": "+250 KRW",
+    "net_profit_after_fee": "+240 KRW"
+  },
+  "psychological_factors": {
+    "confidence_level": "High",
+    "market_uncertainty": "Low",
+    "emotional_state": "More aggressive due to previous successful trade"
+  }
+}
+
                         """,
                         context=[
                             shortSpecial,
-                            riskManage
+                            reflective
                         ],
                         output_file="shortcoin_recommendation.json"
                         )
@@ -256,12 +266,12 @@ def excute_analysis():
     crew = Crew(
         agents=[
             shortMinSpecialist,
-            riskManagement,
+            reflectiveExperts,
             headManager
         ],
         tasks=[
             shortSpecial,
-            riskManage,
+            reflective,
             headManage
         ],
         verbose=True
@@ -299,9 +309,10 @@ def run_every_10_minutes():
         try:
             # 비트코인 뉴스, 가격 정보, 분석 및 매매 실행
             bitcoin_price("minute1", 180, "shortminprice")  # 분봉데이터 확인
-            masu_avg()
-
+            masu_avg("KRW-BTC")
             excute_analysis()  # 분석 시작
+            investmentJsonAppend.append_to_report_data() #Report.json 에 headmanger의 보고서 데이터 축적
+            investmentJsonAppend.delete_old_data() #Report.json에서 7일지난 데이터 삭제
             upbit_trading()  # 매매 실행
         except Exception as e:
             print(f"Error occurred during execution: {e}")
