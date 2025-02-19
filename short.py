@@ -59,7 +59,15 @@ def balance_current(ticker):
     profit_loss_percent = f"{round(profit_loss_percent, 3)}%"
 
     # 거래 내역 조회
-    order_history = upbit.get_order(ticker, state="done", limit=50)
+    # "done" 상태 주문과 "cancel" 상태 주문을 각각 가져오기
+    done_order_history = upbit.get_order("KRW-BTC", state="done", limit=15)
+    cancel_order_history = upbit.get_order("KRW-BTC", state="cancel", limit=15)
+
+    # 두 리스트 합치기
+    combined_order_history = done_order_history + cancel_order_history
+
+    # "created_at" 기준으로 최신순으로 정렬 (내림차순)
+    sorted_order_history = sorted(combined_order_history, key=lambda x: x["created_at"], reverse=True)
 
     # 원하는 JSON 형식으로 데이터 구성
     data = {
@@ -72,7 +80,7 @@ def balance_current(ticker):
             "profit_loss": profit_loss, #손실 (원화)
             "profit_loss_percent": profit_loss_percent  # 손실률
         },
-        "trade_history": order_history
+        "trade_history": sorted_order_history
     }
 
     # JSON 파일로 저장
@@ -270,6 +278,8 @@ The starting amount is 100000 KRW.
 Based on the reports of 'shortMinSpecialist' and 'reflectiveExperts', you decide to buy, sell, or hold for short-term scalping Bitcoin. You know that you can only buy all, sell all, or hold, and you remember that the fee for each trade is “0.05%”. You check your current balance, see how much you bought, how much it went up, and how much it went down, and your goal is to make a profit, not lose money.
 Then, you analyze the chart and calculate the price change since the previous trade was executed, the percentage loss, and the percentage loss including the commission (trade_outcome), and submit the psychological factors to the report (psychological_factors).  
 
+You can look at your previous transaction history to determine if you're holding Bitcoin now or not. For example, if the “side” value of the most recent transaction is bid, you have bitcoin, and if it is ask, you don't have bitcoin.
+
 In 'trading_info.json' you can see your current holdings, average bid price, drawdown, etc. and your trading history.
  The structure of each data in 'trading_info.json' is as follows:
 
@@ -333,9 +343,33 @@ example:
                             shortSpecial,
                             reflective
                         ],
-                        output_file="shortcoin_recommendation.json"
+                        output_file="shortcoin_recommendation.txt"
                         )
 
+
+def jsonkey():  #shortcoin_recommendation 을 current_recommendation.json으로 변환하는 함수
+    # 원본 TXT 파일과 저장할 JSON 파일 경로
+    source_file = "shortcoin_recommendation.txt"
+    destination_file = "current_recommendation.json"
+
+    # 파일 읽기
+    with open(source_file, "r", encoding="utf-8") as file:
+        data = file.read()
+
+    # JSON 부분만 추출 (백틱이나 불필요한 문자 제거)
+    data_cleaned = re.sub(r'```json|```', '', data).strip()
+
+    try:
+        # JSON 형식으로 변환
+        json_data = json.loads(data_cleaned)
+
+        # JSON 파일로 저장
+        with open(destination_file, "w", encoding="utf-8") as json_file:
+            json.dump(json_data, json_file, indent=2, ensure_ascii=False)
+
+        print(f"데이터가 {destination_file}에 저장되었습니다!")
+    except json.JSONDecodeError as e:
+        print(f"JSON 변환 오류: {e}")
 
 def excute_analysis():
     global decision
@@ -355,30 +389,16 @@ def excute_analysis():
     )
     result = crew.kickoff()
 
+def get_decision(): # current_recommendation에서 decision을 추출하여 설정하는함수.
      # 파일을 열고 JSON 데이터 읽기
-    with open("shortcoin_recommendation.json", "r") as file:
-        data = file.read()
-
-    # 백틱이 포함된 불필요한 문자가 있는지 확인
-    if "```json" or "```" in data:
-        # 불필요한 문자가 있으면 정규식을 사용하여 백틱 제거
-        data_cleaned = re.sub(r'```json|```', '', data)
-
-        try:
-            # 정리된 데이터를 JSON으로 변환
-            json_data = json.loads(data_cleaned)
-        except json.JSONDecodeError as e:
-            print(f"JSON 디코딩 오류: {e}")
-            return
-    else:
-        # 불필요한 문자가 없으면 그대로 JSON 파싱
-        json_data = json.loads(data)
+    with open("current_recommendation.json", "r") as file:
+        data = json.load(file)  # JSON 문자열을 파이썬 딕셔너리로 변환
 
     # decision 값 추출
-    decision = json_data.get("decision")
+    decision = data.get("decision")
 
     # 결과 출력
-    print(decision)
+    print(decision)    
 
 
 def run_every_5_minutes():
@@ -388,9 +408,11 @@ def run_every_5_minutes():
             bitcoin_price("minute1", 60, "shortminprice")  # 분봉데이터 확인
             balance_current("KRW-BTC")
             excute_analysis()  # 분석 시작
+            jsonkey() #cuurent decision값 확인하는과정
+            get_decision()
+            upbit_trading()  # 매매 실행
             investmentJsonAppend.append_to_report_data() #Report.json 에 headmanger의 보고서 데이터 축적
             investmentJsonAppend.delete_old_data() #Report.json에서 7일지난 데이터 삭제
-            upbit_trading()  # 매매 실행
         except Exception as e:
             print(f"Error occurred during execution: {e}")
 

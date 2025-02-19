@@ -2,12 +2,12 @@ import json
 from datetime import datetime, timedelta
 
 # 파일 경로
-shortcoin_file = 'shortcoin_recommendation.json'  # shortcoin_recommendation.json
+shortcoin_file = 'current_recommendation.json'  # current_recommendation.json
 report_file = 'ReportData.json'  # ReportData.json
 
-# shortcoin_recommendation.json에서 데이터를 읽어서 ReportData.json에 누적시키는 함수
+# current_recommendation.json에서 데이터를 읽어서 ReportData.json에 누적시키는 함수
 def append_to_report_data():
-    # shortcoin_recommendation.json 파일에서 데이터 읽기
+    # current_recommendation.json 파일에서 데이터 읽기
     try:
         with open(shortcoin_file, 'r', encoding='utf-8') as f:
             new_data = json.load(f)
@@ -66,5 +66,5 @@ def delete_old_data():
         json.dump(filtered_reports, f, ensure_ascii=False, indent=4)
 
 # 실행 예시
-append_to_report_data()  # shortcoin_recommendation.json의 데이터를 ReportData.json에 누적
+append_to_report_data()  # current_recommendation.json의 데이터를 ReportData.json에 누적
 delete_old_data()  # 7일 이상된 데이터 삭제
