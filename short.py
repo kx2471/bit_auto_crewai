@@ -23,7 +23,6 @@ else:
     # 계좌 확인
     
 
-
 decision = None #AI결정값. 전역변수
 
 #upbit 매수,매도 설정
@@ -31,17 +30,37 @@ def upbit_trading():
     try:
         if decision == "buy":
             krw_balance = upbit.get_balance("KRW")
-            upbit.buy_market_order("KRW-BTC", krw_balance-100)
+            if krw_balance is None: # 잔액을 가져오는데 실패한 경우
+                print("Error: Could not retrieve KRW balance.")
+                return
+
+            buy_amount = krw_balance - 100
+            if buy_amount < 0: # 매수 금액이 0보다 작은 경우
+                print("Error: 잔액이 없어 구매할 수 없습니다.")
+                return
+
+            upbit.buy_market_order("KRW-BTC", buy_amount)
+            print(f"Buy order placed for {buy_amount} KRW")
+
         elif decision == "sell":
             btc_balance = upbit.get_balance("BTC")
+            if btc_balance is None: # 잔액을 가져오는데 실패한 경우
+                print("Error: Could not retrieve BTC balance.")
+                return
+            if btc_balance == 0: # 잔액이 0인 경우
+                print("Error: 잔액이 없어 판매할 수 없습니다.")
+                return
             upbit.sell_market_order("KRW-BTC", btc_balance)
-        else:
-            pass
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        pass
+            print(f"Sell order placed for {btc_balance} BTC")
 
-    return
+        elif decision is None: # decision이 None인 경우
+            print("No decision made yet.")
+
+        else:
+            print(f"Hold 합니다.: {decision}")
+
+    except Exception as e:
+        print(f"Error occurred in upbit_trading: {type(e)}, {e}")
 
 def balance_current(ticker):
     # 보유 자산 정보 조회
@@ -55,7 +74,10 @@ def balance_current(ticker):
     est_value = balance_info * current_price  # 평가 금액
     
     profit_loss = est_value - buy_amount
-    profit_loss_percent = (profit_loss / buy_amount) * 100 
+
+    profit_loss_percent = 0.0
+    if buy_amount != 0:
+        profit_loss_percent = (profit_loss / buy_amount) * 100 
     profit_loss_percent = f"{round(profit_loss_percent, 3)}%"
 
     # 거래 내역 조회
@@ -69,10 +91,13 @@ def balance_current(ticker):
     # "created_at" 기준으로 최신순으로 정렬 (내림차순)
     sorted_order_history = sorted(combined_order_history, key=lambda x: x["created_at"], reverse=True)
 
+    KRW_balance = upbit.get_balance(ticker="KRW")
+
     # 원하는 JSON 형식으로 데이터 구성
     data = {
         "my_balances": {
             "currency": ticker, #코인이름
+            "KRW_balance": KRW_balance, #보유원화
             "balance": balance_info, #보유량
             "avg_buy_price": avg_buy_price, #매수평균가
             "buy_amount": buy_amount, #매수금액
@@ -284,7 +309,7 @@ In 'trading_info.json' you can see your current holdings, average bid price, dra
  The structure of each data in 'trading_info.json' is as follows:
 
 "my_balances":
-    "currency": The trading pair being used. It refers to the two assets being traded (e.g., KRW and BTC).
+    "currency": The trading pair being used. It refers to the two assets being traded (e.g., KRW-BTC).
     "balance": The amount of the asset currently held.
     "avg_buy_price": The average price at which the asset was purchased.
     "buy_amount": The total amount spent to purchase the asset.
@@ -327,9 +352,9 @@ example:
     "reflectiveExperts_analysis": "Insights provided by the reflective experts, which may suggest a cautious approach or a particular market condition to be aware of. (e.g, 78%)"
   },
   "trade_outcome": {
-    "price_change": "The percentage change in the asset price after the trade. Example: "5%" (indicating a '5%' increase in price).",
-    "PNL": "The profit or loss made from the trade. Example: "+50000 KRW" (indicating a profit of 50000 KRW).",
-    "net_profit_after_fee": "The net profit or loss after considering trading fees. Example: "+45000 KRW" (indicating a net profit of 45000 KRW after fees)."
+    "price_change": "The percentage of profit or loss from the starting amount to the current price. (((est_value(If est_value is 0, the value of KRW_balance in my_balances) - 100000(starting amount)) / starting amount) * 100 ). Denoted by +,- symbols.",
+    "PNL": "The current profit or loss from the asset trade. Equal to the value of “profit_loss” in the “trading_info.json” file. but Denoted by +,- symbols.
+    "net_profit_after_fee": "“PNL” to limit the fee to the price. The amount of realized profit after the trade. ("PNL" - fee)"
   },
   "psychological_factors": {
     "confidence_level": "The trader's confidence in the current decision and market outlook (e.g., "high", "medium", "low").",
@@ -389,23 +414,36 @@ def excute_analysis():
     )
     result = crew.kickoff()
 
-def get_decision(): # current_recommendation에서 decision을 추출하여 설정하는함수.
-     # 파일을 열고 JSON 데이터 읽기
-    with open("current_recommendation.json", "r") as file:
-        data = json.load(file)  # JSON 문자열을 파이썬 딕셔너리로 변환
+def get_decision():
+    global decision
+    try:
+        with open("current_recommendation.json", "r") as file:
+            data = json.load(file)
+            decision_value = data.get("decision")
 
-    # decision 값 추출
-    decision = data.get("decision")
+            if decision_value is None:
+                print("Warning: 'decision' key not found in current_recommendation.json")
+                decision = None  # 또는 다른 기본값 설정
+            else:
+                decision = str(decision_value)  # 문자열로 명시적 형변환
+                print(f"Decision: {decision}")
 
-    # 결과 출력
-    print(decision)    
+    except FileNotFoundError:
+        print("Error: current_recommendation.json not found.")
+        decision = None  # 파일이 없을 경우 decision을 None으로 설정
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+        decision = None  # JSON 파싱 오류 시 decision을 None으로 설정
+    except Exception as e: # 그 외의 에러
+        print(f"Error occurred in get_decision: {e}")
+        decision = None    
 
 
 def run_every_5_minutes():
     while True:
         try:
             # 비트코인 뉴스, 가격 정보, 분석 및 매매 실행
-            bitcoin_price("minute1", 60, "shortminprice")  # 분봉데이터 확인
+            bitcoin_price("minute1", 30, "shortminprice")  # 분봉데이터 확인
             balance_current("KRW-BTC")
             excute_analysis()  # 분석 시작
             jsonkey() #cuurent decision값 확인하는과정
@@ -414,9 +452,9 @@ def run_every_5_minutes():
             investmentJsonAppend.append_to_report_data() #Report.json 에 headmanger의 보고서 데이터 축적
             investmentJsonAppend.delete_old_data() #Report.json에서 7일지난 데이터 삭제
         except Exception as e:
-            print(f"Error occurred during execution: {e}")
+            print(f"Error occurred during execution: {type(e)}, {e}")
 
-        # 10분마다 (300초) 동안 대기
+        # 5분마다 (300초) 동안 대기
         time.sleep(300)
 
 

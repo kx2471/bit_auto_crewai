@@ -44,8 +44,8 @@ def append_to_report_data():
 
 # 7일 이상된 데이터 삭제 함수
 def delete_old_data():
-    # 현재 날짜와 7일 전 날짜 계산
-    seven_days_ago = datetime.now() - timedelta(days=7)
+    # 현재 날짜와 3일 전 날짜 계산
+    seven_days_ago = datetime.now() - timedelta(days=3)
     seven_days_ago_str = seven_days_ago.strftime('%Y-%m-%d %H:%M:%S')
 
     # ReportData.json에서 기존 데이터 불러오기
@@ -67,4 +67,4 @@ def delete_old_data():
 
 # 실행 예시
 append_to_report_data()  # current_recommendation.json의 데이터를 ReportData.json에 누적
-delete_old_data()  # 7일 이상된 데이터 삭제
+delete_old_data()  # 3일 이상된 데이터 삭제

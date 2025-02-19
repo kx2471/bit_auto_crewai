@@ -16,7 +16,8 @@ if not upbit_acc_key or not upbit_sec_Key:
 else:
     upbit = pyupbit.Upbit(upbit_acc_key, upbit_sec_Key)
     # 계좌 확인
-    
+
+
 def aaa(ticker):
     # 보유 자산 정보 조회
     balance_info = upbit.get_balance(ticker)  # 보유 자산 정보 (예시로 KRW-BTC)
@@ -63,7 +64,7 @@ def aaa(ticker):
 
     print("데이터가 JSON 파일로 저장되었습니다.")
 
-aaa("KRW-BTC")
+
 
 import re
 
@@ -91,4 +92,4 @@ def jsonkey():
     except json.JSONDecodeError as e:
         print(f"❌ JSON 변환 오류: {e}")
 
-    
+    aj = upbit.get_balance(ticker="KRW")
