@@ -96,4 +96,87 @@ def jsonkey():
 
 import investmentData
 
-investmentData.process_data("process_data.json")
+def balance_current(ticker):
+    # 보유 자산 정보 조회
+    balance_info = upbit.get_balance(ticker)  # 보유 자산 정보 (예시로 KRW-BTC)
+    avg_buy_price = upbit.get_avg_buy_price(ticker)  # 매수 평균가 (예시로 KRW-BTC)
+    # 현재 가격 조회
+    current_price = pyupbit.get_current_price(ticker)
+
+    # 매수 금액과 평가 금액 계산
+    buy_amount = balance_info * avg_buy_price  # 매수 금액
+    est_value = balance_info * current_price  # 평가 금액
+    
+    profit_loss = est_value - buy_amount
+
+    profit_loss_percent = 0.0
+    if buy_amount != 0:
+        profit_loss_percent = (profit_loss / buy_amount) * 100 
+    
+
+    KRW_balance = upbit.get_balance(ticker="KRW")
+
+    # 원하는 JSON 형식으로 데이터 구성
+    data = {
+        "my_balances": {
+            "currency": ticker, #코인이름
+            "KRW_balance": KRW_balance, #보유원화
+            "balance": balance_info, #보유량
+            "avg_buy_price": avg_buy_price, #매수평균가
+            "buy_amount": buy_amount, #매수금액
+            "est_value": est_value, #평가금액
+            "profit_loss": profit_loss, #손실 (원화)
+            "profit_loss_percent": profit_loss_percent  # 손실률
+        }
+    }
+
+    # JSON 파일로 저장
+    with open("current_balances_info.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+    print("데이터가 JSON 파일로 저장되었습니다.")
+balance_current("KRW-BTC")
+
+
+
+currency = None
+krw_balance = None
+btc_balance = None
+avg_buy_price = None
+buy_amount = None
+est_value = None
+profit_loss = None
+profit_loss_percent = None
+print(f"Currency: {currency}")
+print(f"KRW Balance: {krw_balance}")
+print(f"BTC Balance: {btc_balance}")
+print(f"Avg Buy Price: {avg_buy_price}")
+print(f"Buy Amount: {buy_amount}")
+print(f"Estimated Value: {est_value}")
+print(f"Profit/Loss: {profit_loss}")
+print(f"Profit/Loss Percent: {profit_loss_percent}")
+
+
+def variable_names():
+    global currency, krw_balance, btc_balance, avg_buy_price, buy_amount, est_value, profit_loss, profit_loss_percent
+    with open("current_balances_info.json", 'r') as file:
+        data = json.load(file)
+    currency = data["my_balances"]["currency"]
+    krw_balance = data["my_balances"]["KRW_balance"]
+    btc_balance = data["my_balances"]["balance"]
+    avg_buy_price = data["my_balances"]["avg_buy_price"]
+    buy_amount = data["my_balances"]["buy_amount"]
+    est_value = data["my_balances"]["est_value"]
+    profit_loss = data["my_balances"]["profit_loss"]
+    profit_loss_percent = data["my_balances"]["profit_loss_percent"]
+    
+
+variable_names()
+print(f"Currency: {currency}")
+print(f"KRW Balance: {krw_balance}")
+print(f"BTC Balance: {btc_balance}")
+print(f"Avg Buy Price: {avg_buy_price}")
+print(f"Buy Amount: {buy_amount}")
+print(f"Estimated Value: {est_value}")
+print(f"Profit/Loss: {profit_loss}")
+print(f"Profit/Loss Percent: {profit_loss_percent}")

@@ -6,21 +6,21 @@ shortcoin_file = 'current_recommendation.json'  # current_recommendation.json
 report_file = 'ReportData.json'  # ReportData.json
 
 # current_recommendation.json에서 데이터를 읽어서 ReportData.json에 누적시키는 함수
-def append_to_report_data():
+def append_to_report_data(file_name, output_file_name):
     # current_recommendation.json 파일에서 데이터 읽기
     try:
-        with open(shortcoin_file, 'r', encoding='utf-8') as f:
+        with open(file_name, 'r', encoding='utf-8') as f:
             new_data = json.load(f)
             # new_data가 리스트가 아니면 리스트로 감싸기
             if not isinstance(new_data, list):
                 new_data = [new_data]
     except FileNotFoundError:
-        print(f"{shortcoin_file} not found.")
+        print(f"{file_name} not found.")
         return
 
     # ReportData.json에서 기존 데이터 불러오기
     try:
-        with open(report_file, 'r', encoding='utf-8') as f:
+        with open(output_file_name, 'r', encoding='utf-8') as f:
             all_reports = json.load(f)
             # all_reports가 리스트가 아닌 경우 리스트로 감싸기
             if not isinstance(all_reports, list):
@@ -39,18 +39,19 @@ def append_to_report_data():
     all_reports.extend(new_data)
 
     # ReportData.json에 저장
-    with open(report_file, 'w', encoding='utf-8') as f:
+    with open(output_file_name, 'w', encoding='utf-8') as f:
         json.dump(all_reports, f, ensure_ascii=False, indent=4)
+        print(f"응답이 {output_file_name}에 누적되었습니다.")
 
 # 7일 이상된 데이터 삭제 함수
-def delete_old_data():
+def delete_old_data(days, output_file_name):
     # 현재 날짜와 3일 전 날짜 계산
-    seven_days_ago = datetime.now() - timedelta(days=3)
-    seven_days_ago_str = seven_days_ago.strftime('%Y-%m-%d %H:%M:%S')
+    days_ago = datetime.now() - timedelta(days)
+    days_ago_str = days_ago.strftime('%Y-%m-%d %H:%M:%S')
 
     # ReportData.json에서 기존 데이터 불러오기
     try:
-        with open(report_file, 'r', encoding='utf-8') as f:
+        with open(output_file_name, 'r', encoding='utf-8') as f:
             all_reports = json.load(f)
             # all_reports가 리스트가 아닌 경우 리스트로 감싸기
             if not isinstance(all_reports, list):
@@ -59,12 +60,11 @@ def delete_old_data():
         all_reports = []
 
     # 7일 이상된 데이터 삭제
-    filtered_reports = [report for report in all_reports if report['timestamp'] >= seven_days_ago_str]
+    filtered_reports = [report for report in all_reports if report['timestamp'] >= days_ago_str]
 
     # 필터링된 데이터를 ReportData.json에 저장
-    with open(report_file, 'w', encoding='utf-8') as f:
+    with open(output_file_name, 'w', encoding='utf-8') as f:
         json.dump(filtered_reports, f, ensure_ascii=False, indent=4)
 
 # 실행 예시
-append_to_report_data()  # current_recommendation.json의 데이터를 ReportData.json에 누적
-delete_old_data()  # 3일 이상된 데이터 삭제
+

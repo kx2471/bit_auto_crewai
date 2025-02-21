@@ -279,7 +279,8 @@ Explanation: The psychological and emotional state of the trader that could infl
     "confidence_level": The trader's level of confidence in the market. For example, "Medium" suggests moderate confidence.
     "market_uncertainty": The level of uncertainty in the market. For example, "High" indicates significant uncertainty in the market conditions.
     "emotional_state": The trader's emotional state based on current market conditions. For example, "Cautious due to current market indecision" means the trader is feeling cautious due to the market's indecisive nature.
-"timestamp": When you made the judgment
+
+"timestamp": When headmanager made the judgment
 
                             """,
                             agent=reflectiveExperts,
@@ -416,10 +417,10 @@ def excute_analysis():
     )
     result = crew.kickoff()
 
-def get_decision():
+def get_decision(file_name):
     global decision
     try:
-        with open("current_recommendation.json", "r") as file:
+        with open(file_name, "r") as file:
             data = json.load(file)
             decision_value = data.get("decision")
 
@@ -431,7 +432,7 @@ def get_decision():
                 print(f"Decision: {decision}")
 
     except FileNotFoundError:
-        print("Error: current_recommendation.json not found.")
+        print(f"Error: {file_name} not found.")
         decision = None  # 파일이 없을 경우 decision을 None으로 설정
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")

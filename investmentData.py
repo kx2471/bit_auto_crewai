@@ -35,28 +35,43 @@ def load_data(file_path):
         data = json.load(file)
     return pd.DataFrame(data)
 
-def calculate_sma(df, window=5): #SMA 5분간격
+def calculate_sma(df, window=2): #SMA 2분간격
     df[f'SMA_{window}'] = df['close'].rolling(window=window).mean()
 
 def calculate_ema(df, window=1): #EMA 1분간격
     df[f'EMA_{window}'] = df['close'].ewm(span=window, adjust=False).mean()
 
-def calculate_rsi(df, window=5): #RSI 5분간격
+def calculate_rsi(df, window=2):  # RSI를 2분 간격으로 계산
+    # 가격 변화량 (Delta)
     delta = df['close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=window).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=window).mean()
-    rs = gain / loss
-    df['RSI'] = 100 - (100 / (1 + rs))
+    
+    # 상승 부분 (Gain)과 하락 부분 (Loss)을 각각 추출
+    gain = (delta.where(delta > 0, 0))  # 상승은 그대로 두고, 하락은 0으로
+    loss = (-delta.where(delta < 0, 0))  # 하락은 그대로 두고, 상승은 0으로
 
-def calculate_bollinger_bands(df, window=5, num_std=2):   #5분단위 불린저밴드 계산
+    # 상승 평균과 하락 평균 계산 (rolling 윈도우를 사용)
+    avg_gain = gain.rolling(window=window).mean()  # 상승 평균
+    avg_loss = loss.rolling(window=window).mean()  # 하락 평균
+
+    # 상대 강도 (RS) 계산
+    rs = avg_gain / avg_loss
+    
+    # RSI 계산
+    df['RSI'] = 100 - (100 / (1 + rs))  # RSI 공식 적용
+
+def calculate_bollinger_bands(df, window=3, num_std=2):   #3분단위 불린저밴드 계산
     df[f'BB_Middle_{window}min'] = df['close'].rolling(window=window).mean()
     df[f'BB_Upper_{window}min'] = df[f'BB_Middle_{window}min'] + num_std * df['close'].rolling(window=window).std()
     df[f'BB_Lower_{window}min'] = df[f'BB_Middle_{window}min'] - num_std * df['close'].rolling(window=window).std()
 
-def process_data(output_filename="processed_data.json"):
+
+
+
+
+def process_data(output_filename="./shortnotauto_data/processed_data.json"):
     # 데이터를 로드하고 지표들을 계산
-    bitcoin_price("minute1", 61, "shortminprice.json")
-    file_path = 'shortminprice.json'
+    bitcoin_price("minute1", 180, "./shortnotauto_data/shortminprice.json")
+    file_path = './shortnotauto_data/shortminprice.json'
     df = load_data(file_path)
     calculate_sma(df)
     calculate_ema(df)
@@ -73,11 +88,7 @@ def process_data(output_filename="processed_data.json"):
     df.to_json(output_filename, orient="records", date_format="iso", indent=4)
     return df
 
-# 파일 경로 설정 및 실행
-process_data()
-with open("processed_data.json",'r') as file:
-    sample_data = json.load(file)
-print(sample_data)
+
 
 
 
