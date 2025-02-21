@@ -93,3 +93,7 @@ def jsonkey():
         print(f"❌ JSON 변환 오류: {e}")
 
     aj = upbit.get_balance(ticker="KRW")
+
+import investmentData
+
+investmentData.process_data("process_data.json")
